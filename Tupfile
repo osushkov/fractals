@@ -1,0 +1,2 @@
+include_rules
+: src/*.o src/util/util.a src/math/math.a src/fractals/fractals.a |> $(CC) %f -o %o $(CLFLAGS) |> fractals
