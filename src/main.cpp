@@ -5,6 +5,7 @@
 #include <memory>
 #include <future>
 #include <thread>
+#include <chrono>
 #include <SDL2/SDL.h>
 #include <cairo/cairo.h>
 
@@ -15,17 +16,24 @@
 #include "fractals/JuliaSetFractal.hpp"
 #include "fractals/SingleThreadedEscapeGenerator.hpp"
 #include "fractals/MultiThreadedEscapeGenerator.hpp"
+#include "fractals/CudaMandelbrotGenerator.hpp"
 #include "fractals/BinaryColorGenerator.hpp"
 #include "fractals/GradientColorGenerator.hpp"
 #include "fractals/FractalRenderer.hpp"
 
+#include "cuda/MandelbrotKernel.hpp"
+
 const double GOLDEN_RATIO = 1.61803398875;
 
 const Vector2 JULIA_CONST(GOLDEN_RATIO - 2.0, GOLDEN_RATIO - 1.0);
-std::shared_ptr<Fractal> fractal(new JuliaSetFractal(JULIA_CONST, 256));
+// std::shared_ptr<Fractal> fractal(new JuliaSetFractal(JULIA_CONST));
+std::shared_ptr<Fractal> fractal(new MandelbrotFractal());
 
 std::shared_ptr<FractalEscapeGenerator> pointGenerator(
-    new MultiThreadedEscapeGenerator(fractal));
+    new CudaMandelbrotGenerator());
+// std::shared_ptr<FractalEscapeGenerator> pointGenerator(
+//     new MultiThreadedEscapeGenerator(fractal));
+
 std::shared_ptr<ColorGenerator> colorGenerator(
     new GradientColorGenerator(Color::RED(1.0), Color::WHITE(1.0), 128));
 
@@ -33,12 +41,14 @@ std::unique_ptr<FractalRenderer> renderer(
     new FractalRenderer(pointGenerator, colorGenerator));
 
 
-static const unsigned SCREEN_PIXELS_WIDTH = 800;
-static const unsigned SCREEN_PIXELS_HEIGHT = 800;
+static const unsigned SCREEN_PIXELS_WIDTH = 1200;
+static const unsigned SCREEN_PIXELS_HEIGHT = 1200;
 static const double ZOOM_FACTOR = 2.0;
 
 static const Vector2 baseMinExtents(-2.0, -2.0);
 static const Vector2 baseMaxExtents(2.0, 2.0);
+
+static std::chrono::high_resolution_clock myClock;
 
 double curZoomLevel = 1.0;
 Vector2 curFocusPoint(0.0, 0.0);
@@ -63,12 +73,18 @@ std::vector<Color> generatePixels(unsigned width, unsigned height) {
   }
 
   unsigned newMaxIterations = 128 + log(curZoomLevel)*10;
-  fractal->setMaxIterations(newMaxIterations);
+  pointGenerator->setMaxIterations(newMaxIterations);
 
   Vector2 minExtents = getCurMinExtents();
   Vector2 maxExtents = getCurMaxExtents();
 
+  auto startTimestamp = myClock.now();
   cachedPixels = renderer->renderPixels(minExtents, maxExtents, width, height);
+  auto gap = myClock.now() - startTimestamp;
+
+  std::cout << "timer: " <<  std::chrono::duration_cast<std::chrono::milliseconds>(gap).count()
+            << "ms" << std::endl;
+
   shouldRefresh = false;
 
   return cachedPixels;

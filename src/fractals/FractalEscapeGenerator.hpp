@@ -27,6 +27,8 @@ public:
         const Vector2 &regionMin, const Vector2 &regionMax,
         unsigned samplesX, unsigned samplesY) const = 0;
 
+  virtual void setMaxIterations(unsigned maxIterations) = 0;
+
   static double calculatePixelWidth(const Vector2 &regionMin, const Vector2 &regionMax, unsigned samplesX);
   static double calculatePixelHeight(const Vector2 &regionMin, const Vector2 &regionMax, unsigned samplesY);
   static Vector2 getFirstPixelPos(const Vector2 &regionMin, double pWidth, double pHeight);

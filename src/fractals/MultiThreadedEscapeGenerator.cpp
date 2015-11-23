@@ -15,6 +15,7 @@
 class MultiThreadedEscapeGenerator::MultiThreadedEscapeGeneratorImpl {
 
   std::shared_ptr<Fractal> fractal;
+  unsigned maxIterations = 256;
 
 public:
   MultiThreadedEscapeGeneratorImpl(std::shared_ptr<Fractal> fractal) :
@@ -43,6 +44,11 @@ public:
     }
 
     return result;
+  }
+
+  void setMaxIterations(unsigned maxIterations) {
+    assert(maxIterations > 0);
+    this->maxIterations = maxIterations;
   }
 
 private:
@@ -75,6 +81,7 @@ private:
      return std::packaged_task<std::vector<FractalPoint>()>(
          [this, regionMin, regionMax, samplesX, samplesY]() {
        SingleThreadedEscapeGenerator gen(this->fractal);
+       gen.setMaxIterations(this->maxIterations);
        return gen.sampleRegion(regionMin, regionMax, samplesX, samplesY);
      });
    }
@@ -91,4 +98,8 @@ std::vector<FractalPoint> MultiThreadedEscapeGenerator::sampleRegion(
     unsigned samplesX, unsigned samplesY) const {
 
   return impl->sampleRegion(regionMin, regionMax, samplesX, samplesY);
+}
+
+void MultiThreadedEscapeGenerator::setMaxIterations(unsigned maxIterations) {
+  impl->setMaxIterations(maxIterations);
 }

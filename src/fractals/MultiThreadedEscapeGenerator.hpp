@@ -22,6 +22,8 @@ public:
         const Vector2 &regionMin, const Vector2 &regionMax,
         unsigned samplesX, unsigned samplesY) const override;
 
+  void setMaxIterations(unsigned maxIterations) override;
+
 private:
   class MultiThreadedEscapeGeneratorImpl;
   std::unique_ptr<MultiThreadedEscapeGeneratorImpl> impl;

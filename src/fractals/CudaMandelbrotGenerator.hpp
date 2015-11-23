@@ -8,15 +8,13 @@
 #pragma once
 
 #include <memory>
-
 #include "FractalEscapeGenerator.hpp"
-#include "Fractal.hpp"
 
-class SingleThreadedEscapeGenerator : public FractalEscapeGenerator {
+class CudaMandelbrotGenerator : public FractalEscapeGenerator {
 public:
 
-  SingleThreadedEscapeGenerator(std::shared_ptr<Fractal> fractal);
-  virtual ~SingleThreadedEscapeGenerator();
+  CudaMandelbrotGenerator();
+  virtual ~CudaMandelbrotGenerator();
 
   std::vector<FractalPoint> sampleRegion(
         const Vector2 &regionMin, const Vector2 &regionMax,
@@ -25,6 +23,6 @@ public:
   void setMaxIterations(unsigned maxIterations) override;
 
 private:
-  class SingleThreadedEscapeGeneratorImpl;
-  std::unique_ptr<SingleThreadedEscapeGeneratorImpl> impl;
+  class CudaMandelbrotGeneratorImpl;
+  std::unique_ptr<CudaMandelbrotGeneratorImpl> impl;
 };

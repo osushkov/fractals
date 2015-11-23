@@ -15,8 +15,6 @@ public:
   virtual ~Fractal() {}
 
   // Returns 0 if point never escapes.
-  virtual int pointEscapeIterations(const Vector2 &point) const = 0;
-
-  virtual void setMaxIterations(unsigned maxIterations) = 0;
+  virtual int pointEscapeIterations(const Vector2 &point, unsigned maxIterations) const = 0;
 
 };

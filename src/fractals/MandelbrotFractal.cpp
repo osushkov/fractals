@@ -13,15 +13,11 @@
 class MandelbrotFractal::MandelbrotFractalImpl {
   static constexpr double ESCAPE_THRESHOLD_2 = 2.0 * 2.0;
 
-  unsigned maxIterations;
-
 public:
-  MandelbrotFractalImpl(unsigned maxIterations) :
-      maxIterations(maxIterations) {}
-
+  MandelbrotFractalImpl() {}
   virtual ~MandelbrotFractalImpl() {}
 
-  int pointEscapeIterations(const Vector2 &point) const {
+  int pointEscapeIterations(const Vector2 &point, unsigned maxIterations) const {
     Vector2 curVal(0.0, 0.0);
     for (unsigned i = 1; i <= maxIterations; i++) {
       curVal = nextIteration(curVal, point);
@@ -31,10 +27,6 @@ public:
     }
 
     return 0;
-  }
-
-  void setMaxIterations(unsigned maxIterations) {
-    this->maxIterations = maxIterations;
   }
 
 private:
@@ -47,15 +39,9 @@ private:
 };
 
 
-MandelbrotFractal::MandelbrotFractal(unsigned maxIterations) :
-    impl(new MandelbrotFractalImpl(maxIterations)) {}
-
+MandelbrotFractal::MandelbrotFractal() : impl(new MandelbrotFractalImpl()) {}
 MandelbrotFractal::~MandelbrotFractal() = default;
 
-int MandelbrotFractal::pointEscapeIterations(const Vector2 &point) const {
-  return impl->pointEscapeIterations(point);
-}
-
-void MandelbrotFractal::setMaxIterations(unsigned maxIterations) {
-  impl->setMaxIterations(maxIterations);
+int MandelbrotFractal::pointEscapeIterations(const Vector2 &point, unsigned maxIterations) const {
+  return impl->pointEscapeIterations(point, maxIterations);
 }

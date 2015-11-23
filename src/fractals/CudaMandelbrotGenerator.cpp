@@ -5,20 +5,19 @@
  *      Author: osushkov
  */
 
-#include "SingleThreadedEscapeGenerator.hpp"
+#include "CudaMandelbrotGenerator.hpp"
+#include "../cuda/MandelbrotKernel.hpp"
+
 #include <cassert>
 
 
-class SingleThreadedEscapeGenerator::SingleThreadedEscapeGeneratorImpl {
+class CudaMandelbrotGenerator::CudaMandelbrotGeneratorImpl {
 
-  std::shared_ptr<Fractal> fractal;
   unsigned maxIterations = 256;
 
 public:
-  SingleThreadedEscapeGeneratorImpl(std::shared_ptr<Fractal> fractal) :
-    fractal(fractal) {}
-
-  virtual ~SingleThreadedEscapeGeneratorImpl() = default;
+  CudaMandelbrotGeneratorImpl() = default;
+  virtual ~CudaMandelbrotGeneratorImpl() = default;
 
   std::vector<FractalPoint> sampleRegion(
       const Vector2 &regionMin, const Vector2 &regionMax,
@@ -30,16 +29,23 @@ public:
     double pHeight = FractalEscapeGenerator::calculatePixelHeight(regionMin, regionMax, samplesY);
     Vector2 minPixel = FractalEscapeGenerator::getFirstPixelPos(regionMin, pWidth, pHeight);
 
-    std::vector<FractalPoint> points;
+    std::vector<Vector2> samplePoints;
     for (unsigned y = 0; y < samplesY; y++) {
       for (unsigned x = 0; x < samplesX; x++) {
-        Vector2 pixelPos(minPixel + Vector2(x*pWidth, y*pHeight));
-        int fractalIters = fractal->pointEscapeIterations(pixelPos, maxIterations);
-        points.push_back(FractalPoint(pixelPos, fractalIters));
+        samplePoints.push_back(Vector2(minPixel + Vector2(x*pWidth, y*pHeight)));
       }
     }
 
-    return points;
+    std::vector<int> escapeIters = MandelbrotKernel::calculateIterationsPerPixel(
+        samplesX, samplesY, pWidth, pHeight, cuVector2(minPixel.x, minPixel.y), maxIterations);
+
+    assert(escapeIters.size() == samplePoints.size());
+    std::vector<FractalPoint> resultPoints;
+    for (unsigned i = 0; i < escapeIters.size(); i++) {
+      resultPoints.push_back(FractalPoint(samplePoints[i], escapeIters[i]));
+    }
+
+    return resultPoints;
   }
 
   void setMaxIterations(unsigned maxIterations) {
@@ -49,18 +55,18 @@ public:
 };
 
 
-SingleThreadedEscapeGenerator::SingleThreadedEscapeGenerator(std::shared_ptr<Fractal> fractal) :
-    impl(new SingleThreadedEscapeGeneratorImpl(fractal)) {}
+CudaMandelbrotGenerator::CudaMandelbrotGenerator() :
+    impl(new CudaMandelbrotGeneratorImpl()) {}
 
-SingleThreadedEscapeGenerator::~SingleThreadedEscapeGenerator() = default;
+CudaMandelbrotGenerator::~CudaMandelbrotGenerator() = default;
 
-std::vector<FractalPoint> SingleThreadedEscapeGenerator::sampleRegion(
+std::vector<FractalPoint> CudaMandelbrotGenerator::sampleRegion(
     const Vector2 &regionMin, const Vector2 &regionMax,
     unsigned samplesX, unsigned samplesY) const {
 
   return impl->sampleRegion(regionMin, regionMax, samplesX, samplesY);
 }
 
-void SingleThreadedEscapeGenerator::setMaxIterations(unsigned maxIterations) {
+void CudaMandelbrotGenerator::setMaxIterations(unsigned maxIterations) {
   impl->setMaxIterations(maxIterations);
 }

@@ -13,11 +13,10 @@
 
 class JuliaSetFractal : public Fractal {
 public:
-  JuliaSetFractal(const Vector2 &c, unsigned maxIterations);
+  JuliaSetFractal(const Vector2 &c);
   virtual ~JuliaSetFractal();
 
-  int pointEscapeIterations(const Vector2 &point) const override;
-  void setMaxIterations(unsigned maxIterations) override;
+  int pointEscapeIterations(const Vector2 &point, unsigned maxIterations) const override;
 
 private:
   class JuliaSetFractalImpl;

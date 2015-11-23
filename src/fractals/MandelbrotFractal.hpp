@@ -12,11 +12,10 @@
 
 class MandelbrotFractal : public Fractal {
 public:
-  MandelbrotFractal(unsigned maxIterations);
+  MandelbrotFractal();
   virtual ~MandelbrotFractal();
 
-  int pointEscapeIterations(const Vector2 &point) const override;
-  void setMaxIterations(unsigned maxIterations) override;
+  int pointEscapeIterations(const Vector2 &point, unsigned maxIterations) const override;
 
 private:
   class MandelbrotFractalImpl;
